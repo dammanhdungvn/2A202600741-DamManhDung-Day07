@@ -162,12 +162,12 @@ PY
 - `FixedSizeChunker` — sliding window chunking
 
 ### Cần implement
-- `SentenceChunker` — chia theo ranh giới câu
-- `RecursiveChunker` — thử từng separator theo thứ tự
-- `compute_similarity` — cosine similarity
-- `ChunkingStrategyComparator` — so sánh 3 chiến lược
-- `EmbeddingStore` — wrapper quanh vector store (5 methods)
-- `KnowledgeBaseAgent` — RAG pattern agent
+- [x] `SentenceChunker` — chia theo ranh giới câu
+- [x] `RecursiveChunker` — thử từng separator theo thứ tự
+- [x] `compute_similarity` — cosine similarity
+- [x] `ChunkingStrategyComparator` — so sánh 3 chiến lược
+- [x] `EmbeddingStore` — wrapper quanh vector store (5 methods)
+- [x] `KnowledgeBaseAgent` — RAG pattern agent
 
 ---
 
@@ -223,8 +223,8 @@ Xem chi tiết tại `docs/SCORING.md`. Tóm tắt:
 
 ## Sản Phẩm Nộp Bài
 
-1. `src/` — hoàn thành tất cả TODO cần thiết
-2. `report/REPORT.md` — một báo cáo/sinh viên (gồm cả phần nhóm và cá nhân)
+- [x] `src/` — hoàn thành tất cả TODO cần thiết
+- [x] `report/REPORT.md` — một báo cáo/sinh viên (gồm cả phần nhóm và cá nhân)
 
 ---
 
