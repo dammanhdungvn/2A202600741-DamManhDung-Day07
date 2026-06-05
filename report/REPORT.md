@@ -11,29 +11,29 @@
 ### Cosine Similarity (Ex 1.1)
 
 **High cosine similarity nghĩa là gì?**
-> *Viết 1-2 câu:*
+> *Viết 1-2 câu:* High cosine similarity có nghĩa là hai đoạn văn bản có ý nghĩa hoặc ngữ cảnh rất tương đồng nhau khi được biểu diễn dưới dạng vector. Góc giữa hai vector của chúng rất nhỏ, thể hiện rằng chúng có chung nhiều đặc trưng ngữ nghĩa.
 
 **Ví dụ HIGH similarity:**
-- Sentence A:
-- Sentence B:
-- Tại sao tương đồng:
+- Sentence A: "Con chó màu nâu đang chạy trên thảm cỏ."
+- Sentence B: "Chú cún có bộ lông nâu đang đùa nghịch trên bãi cỏ."
+- Tại sao tương đồng: Cả hai đều miêu tả cùng một sự việc với các từ đồng nghĩa (con chó - chú cún, chạy - đùa nghịch, thảm cỏ - bãi cỏ) nên vector ngữ nghĩa của chúng sẽ rất gần nhau.
 
 **Ví dụ LOW similarity:**
-- Sentence A:
-- Sentence B:
-- Tại sao khác:
+- Sentence A: "Con chó màu nâu đang chạy trên thảm cỏ."
+- Sentence B: "Thị trường chứng khoán hôm nay biến động mạnh."
+- Tại sao khác: Hai câu nói về hai chủ đề hoàn toàn khác biệt (động vật/thiên nhiên so với tài chính/kinh tế) nên vector biểu diễn của chúng sẽ có độ lệch góc rất lớn, dẫn đến độ tương đồng thấp.
 
 **Tại sao cosine similarity được ưu tiên hơn Euclidean distance cho text embeddings?**
-> *Viết 1-2 câu:*
+> *Viết 1-2 câu:* Cosine similarity tập trung vào hướng (góc) của vector thay vì độ dài. Độ dài của text embedding thường bị ảnh hưởng bởi độ dài của câu văn; cosine similarity giúp bỏ qua khác biệt về độ dài văn bản để thực sự đánh giá xem hai văn bản có chung ngữ nghĩa hay không.
 
 ### Chunking Math (Ex 1.2)
 
 **Document 10,000 ký tự, chunk_size=500, overlap=50. Bao nhiêu chunks?**
-> *Trình bày phép tính:*
-> *Đáp án:*
+> *Trình bày phép tính:* `num_chunks = ceil((10000 - 50) / (500 - 50)) = ceil(9950 / 450) = ceil(22.11)`
+> *Đáp án:* 23 chunks.
 
 **Nếu overlap tăng lên 100, chunk count thay đổi thế nào? Tại sao muốn overlap nhiều hơn?**
-> *Viết 1-2 câu:*
+> *Viết 1-2 câu:* Nếu overlap tăng lên 100, số lượng chunk tăng lên thành 25 (`ceil((10000 - 100) / (500 - 100)) = 24.75`). Ta muốn overlap nhiều hơn để đảm bảo không bị mất mát hay cắt đứt ngữ cảnh quan trọng nằm ở phần ranh giới giữa hai chunk, giúp model truy xuất thông tin trọn vẹn hơn.
 
 ---
 
