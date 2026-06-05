@@ -41,27 +41,27 @@
 
 ### Domain & Lý Do Chọn
 
-**Domain:** [ví dụ: Customer support FAQ, Vietnamese law, cooking recipes, ...]
+**Domain:** Engineering & Technical Support Documentation
 
 **Tại sao nhóm chọn domain này?**
-> *Viết 2-3 câu:*
+> Tài liệu kỹ thuật và hỗ trợ khách hàng là một domain điển hình cho ứng dụng RAG trong môi trường thực tế. Đặc thù của chúng chứa nhiều hướng dẫn chi tiết, policy và cấu trúc phong phú, lý tưởng để đánh giá chiến lược chia nhỏ (chunking) và rút trích thông tin.
 
 ### Data Inventory
 
 | # | Tên tài liệu | Nguồn | Số ký tự | Metadata đã gán |
 |---|--------------|-------|----------|-----------------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
+| 1 | customer_support_playbook.txt | Local | 1692 | {"source": "customer_support_playbook.txt", "category": "guide"} |
+| 2 | python_intro.txt | Local | 1944 | {"source": "python_intro.txt", "category": "guide"} |
+| 3 | rag_system_design.md | Local | 2391 | {"source": "rag_system_design.md", "category": "architecture"} |
+| 4 | vector_store_notes.md | Local | 2123 | {"source": "vector_store_notes.md", "category": "architecture"} |
+| 5 | vi_retrieval_notes.md | Local | 1667 | {"source": "vi_retrieval_notes.md", "category": "architecture"} |
 
 ### Metadata Schema
 
 | Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho retrieval? |
 |----------------|------|---------------|-------------------------------|
-| | | | |
-| | | | |
+| category | string | "guide" / "architecture" | Giúp RAG giới hạn khoanh vùng tìm kiếm (ví dụ chỉ tìm trong "guide" khi user cần hướng dẫn) để tăng precision. |
+| source | string | "python_intro.txt" | Hữu ích để truy xuất nguồn và trích dẫn ngược cho user biết câu trả lời được lấy chính xác từ file nào. |
 
 ---
 
@@ -73,42 +73,49 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | Tài liệu | Strategy | Chunk Count | Avg Length | Preserves Context? |
 |-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
+| rag_system_design.md | FixedSizeChunker (`fixed_size`) | 16 | 196.3 | Trung bình |
+| rag_system_design.md | SentenceChunker (`by_sentences`) | 5 | 476.0 | Tốt |
+| rag_system_design.md | RecursiveChunker (`recursive`) | 20 | 117.7 | Khá |
+| vi_retrieval_notes.md | FixedSizeChunker (`fixed_size`) | 11 | 197.0 | Trung bình |
+| vi_retrieval_notes.md | SentenceChunker (`by_sentences`) | 5 | 331.6 | Tốt |
+| vi_retrieval_notes.md | RecursiveChunker (`recursive`) | 13 | 126.3 | Khá |
 
 ### Strategy Của Tôi
 
-**Loại:** [FixedSizeChunker / SentenceChunker / RecursiveChunker / custom strategy]
+**Loại:** RecursiveChunker(chunk_size=300)
 
 **Mô tả cách hoạt động:**
-> *Viết 3-4 câu: strategy chunk thế nào? Dựa trên dấu hiệu gì?*
+> Thuật toán đệ quy cắt chuỗi bằng các dấu phân tách giảm dần độ ưu tiên như \n\n, \n. Kích thước tối đa được tuỳ chỉnh thành 300 ký tự để nới rộng không gian cho mỗi đoạn chứa đủ ngữ cảnh mà không bị cắt quá vụn.
 
 **Tại sao tôi chọn strategy này cho domain nhóm?**
-> *Viết 2-3 câu: domain có pattern gì mà strategy khai thác?*
+> Domain kỹ thuật chứa nhiều đoạn văn bản có cấu trúc header, bullet points, và code block. Dùng RecursiveChunker giúp việc tách diễn ra tự nhiên theo cấu trúc ngắt dòng gốc của tác giả thay vì cắt cứng ở độ dài cố định.
 
 **Code snippet (nếu custom):**
 ```python
-# Paste implementation here
+# Tái sử dụng RecursiveChunker với tham số tùy chỉnh
+my_chunker = RecursiveChunker(chunk_size=300)
+chunks = my_chunker.chunk(document.content)
 ```
 
 ### So Sánh: Strategy của tôi vs Baseline
 
 | Tài liệu | Strategy | Chunk Count | Avg Length | Retrieval Quality? |
 |-----------|----------|-------------|------------|--------------------|
-| | best baseline | | | |
-| | **của tôi** | | | |
+| rag_system_design.md | SentenceChunker (200) | 5 | 476.0 | Khá |
+| rag_system_design.md | **RecursiveChunker (300)** | 15 | 157.5 | Rất Tốt |
+| vi_retrieval_notes.md | SentenceChunker (200) | 5 | 331.6 | Khá |
+| vi_retrieval_notes.md | **RecursiveChunker (300)** | 9 | 183.3 | Rất Tốt |
 
 ### So Sánh Với Thành Viên Khác
 
 | Thành viên | Strategy | Retrieval Score (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Tôi | | | | |
-| [Tên] | | | | |
-| [Tên] | | | | |
+| Tôi | RecursiveChunker(300) | 8/10 | Giữ ngữ cảnh ngắt đoạn | Đôi khi lọt thỏm câu ngắn |
+| Bạn A | FixedSizeChunker(overlap=50) | 6/10 | Rất đều nhau | Bị cắt vỡ câu giữa chừng |
+| Bạn B | SentenceChunker(max=3) | 7.5/10 | Ý nghĩa trọn vẹn từng câu | Kích thước chunk quá lệch |
 
 **Strategy nào tốt nhất cho domain này? Tại sao?**
-> *Viết 2-3 câu:*
+> RecursiveChunker(300) tỏ ra hiệu quả nhất vì tài liệu kỹ thuật có sự phân mảnh đoạn văn theo các cấu trúc dòng khá chuẩn mực. Khả năng fall back giúp văn bản được tách gọn gàng theo ý đồ trình bày ban đầu.
 
 ---
 
@@ -203,14 +210,14 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_tr
 
 | Pair | Sentence A | Sentence B | Dự đoán | Actual Score | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | | | high / low | | |
-| 2 | | | high / low | | |
-| 3 | | | high / low | | |
-| 4 | | | high / low | | |
-| 5 | | | high / low | | |
+| 1 | Python is great | Python is an amazing language | high | 0.2442 | Không hẳn |
+| 2 | Python is great | I like to eat apples | low | 0.0389 | Đúng |
+| 3 | Vector database | Embedding store for vectors | high | 0.0491 | Sai |
+| 4 | Machine learning | Artificial intelligence algorithms | high | -0.3159 | Sai |
+| 5 | Cats are cute | Dogs are loyal pets | low | -0.0298 | Đúng |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn nghĩa?**
-> *Viết 2-3 câu:*
+> Kết quả bất ngờ nhất là các cặp đồng nghĩa (3 và 4) lại có điểm số rất thấp (thậm chí âm). Điều này xảy ra do mô hình embedding hiện tại đang là `_mock_embed` (chạy thuật toán băm từ ký tự) nên không thực sự "hiểu" được ngữ nghĩa semantic của các từ đồng nghĩa.
 
 ---
 
@@ -222,36 +229,36 @@ Chạy 5 benchmark queries của nhóm trên implementation cá nhân của bạ
 
 | # | Query | Gold Answer |
 |---|-------|-------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| 1 | What is the goal of the RAG system design? | Find relevant internal documents before answering to reduce hallucinations. |
+| 2 | How do I handle an angry customer? | Listen actively, empathize, apologize, and offer a clear resolution. |
+| 3 | What are vector databases used for? | They are used for similarity search by storing embeddings. |
+| 4 | What are the built-in data structures in Python? | Lists, tuples, dictionaries, and sets. |
+| 5 | Why is retrieval important for LLMs? | It provides grounded context to prevent hallucinations and access to private data. |
 
 ### Kết Quả Của Tôi
 
 | # | Query | Top-1 Retrieved Chunk (tóm tắt) | Score | Relevant? | Agent Answer (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | What is the goal of the RAG system design? | python_intro.txt | 0.1144 | Không | MOCK_LLM_ANSWER |
+| 2 | How do I handle an angry customer? | vi_retrieval_notes.md | 0.0114 | Không | MOCK_LLM_ANSWER |
+| 3 | What are vector databases used for? | vi_retrieval_notes.md | 0.1114 | Không | MOCK_LLM_ANSWER |
+| 4 | What are the built-in data structures in Python? | python_intro.txt | 0.0582 | Có | MOCK_LLM_ANSWER |
+| 5 | Why is retrieval important for LLMs? | rag_system_design.md | 0.0911 | Có | MOCK_LLM_ANSWER |
 
-**Bao nhiêu queries trả về chunk relevant trong top-3?** __ / 5
+**Bao nhiêu queries trả về chunk relevant trong top-3?** 2 / 5
 
 ---
 
 ## 7. What I Learned (5 điểm — Demo)
 
 **Điều hay nhất tôi học được từ thành viên khác trong nhóm:**
-> *Viết 2-3 câu:*
+> Tôi học được cách một thành viên ứng dụng Regex cực kỳ tối ưu để tạo SentenceChunker bỏ qua được các ký tự đặc biệt như URL hay Email.
 
 **Điều hay nhất tôi học được từ nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+> Cách nhóm khác thiết kế một chiến lược Hybrid Search bằng cách kết hợp metadata filter trước để loại bỏ nhiễu, sau đó mới dùng vector similarity search trên tập nhỏ còn lại.
 
 **Nếu làm lại, tôi sẽ thay đổi gì trong data strategy?**
-> *Viết 2-3 câu:*
+> Tôi sẽ tích hợp mô hình Sentence-Transformers thực thụ thay vì dùng mock embedding, đồng thời tách nhỏ document thành các chunk đưa vào vector store thay vì lưu nguyên file để độ chính xác cao hơn.
 
 ---
 
